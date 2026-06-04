@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.HttpOverrides;
 using OffshoreInsights.API.Filters;
 using OffshoreInsights.API.OpenApi;
 using OffshoreInsights.Application.IoC;
@@ -32,12 +33,21 @@ builder.Services.AddOpenApi(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Railway (and most reverse proxies) terminate TLS at the edge and forward plain
+// HTTP to the container. Without this, the app thinks it is running on HTTP, the
+// generated OpenAPI spec gets an http:// server URL, and the browser blocks every
+// Scalar request as mixed content (no HTTP status code, just "Failed to fetch").
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
-}
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 app.MapOpenApi();
 app.MapScalarApiReference();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
