@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffshoreInsights.API", "OffshoreInsights.API\OffshoreInsights.API.csproj", "{F085042D-3718-451A-A63F-46BF18C6D7D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffshoreInsights.Application", "OffshoreInsights.Application\OffshoreInsights.Application.csproj", "{CCE611DD-BE42-4A4B-BC73-90A07ED77ED4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffshoreInsights.Domain", "OffshoreInsights.Domain\OffshoreInsights.Domain.csproj", "{97FCFB41-5FB6-4F7F-8EFC-C64FDA402532}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffshoreInsights.Infrastructure", "OffshoreInsights.Infrastructure\OffshoreInsights.Infrastructure.csproj", "{3BF71180-AB78-4CD2-8773-E7CF0B6FBC37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffshoreInsights.Persistence", "OffshoreInsights.Persistence\OffshoreInsights.Persistence.csproj", "{135B55DC-F3B7-4265-BE84-4B71E660EF65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F085042D-3718-451A-A63F-46BF18C6D7D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F085042D-3718-451A-A63F-46BF18C6D7D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F085042D-3718-451A-A63F-46BF18C6D7D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F085042D-3718-451A-A63F-46BF18C6D7D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCE611DD-BE42-4A4B-BC73-90A07ED77ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCE611DD-BE42-4A4B-BC73-90A07ED77ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCE611DD-BE42-4A4B-BC73-90A07ED77ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCE611DD-BE42-4A4B-BC73-90A07ED77ED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97FCFB41-5FB6-4F7F-8EFC-C64FDA402532}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97FCFB41-5FB6-4F7F-8EFC-C64FDA402532}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97FCFB41-5FB6-4F7F-8EFC-C64FDA402532}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97FCFB41-5FB6-4F7F-8EFC-C64FDA402532}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BF71180-AB78-4CD2-8773-E7CF0B6FBC37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BF71180-AB78-4CD2-8773-E7CF0B6FBC37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BF71180-AB78-4CD2-8773-E7CF0B6FBC37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BF71180-AB78-4CD2-8773-E7CF0B6FBC37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{135B55DC-F3B7-4265-BE84-4B71E660EF65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{135B55DC-F3B7-4265-BE84-4B71E660EF65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{135B55DC-F3B7-4265-BE84-4B71E660EF65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{135B55DC-F3B7-4265-BE84-4B71E660EF65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

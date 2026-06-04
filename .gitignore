@@ -1,0 +1,55 @@
+# ─── Build output ─────────────────────────────────────────────────────────────
+bin/
+obj/
+out/
+publish/
+
+# ─── NuGet ────────────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ─── Visual Studio ────────────────────────────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# ─── JetBrains Rider ──────────────────────────────────────────────────────────
+.idea/
+*.sln.iml
+riderModule.iml
+/_ReSharper.Caches/
+
+# ─── Secrets — NEVER commit these ────────────────────────────────────────────
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+*.pfx
+*.p12
+*.key
+.env
+.env.*
+secrets.json
+
+# ─── Test results ─────────────────────────────────────────────────────────────
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage*/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── OS artefacts ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
