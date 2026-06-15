@@ -62,7 +62,12 @@ public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
 
         if (executed.Exception is null && statusCode is >= 200 and < 300)
         {
-            _ = validator.RecordUsageAsync(result.UserId!, result.ApiKeyId);
+            if (result.Plan == AccountPlan.Free)
+                // Await for free tier so the count is committed before the response is sent.
+                // This prevents the next request reading a stale count and bypassing the limit.
+                await validator.RecordUsageAsync(result.UserId!, result.ApiKeyId);
+            else
+                _ = validator.RecordUsageAsync(result.UserId!, result.ApiKeyId);
         }
     }
 }
