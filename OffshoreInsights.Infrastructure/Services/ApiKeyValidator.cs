@@ -71,15 +71,28 @@ public class ApiKeyValidator(
                 .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, DateTime.UtcNow));
 
             var periodStart = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            var periodStr   = periodStart.ToString("yyyy-MM-dd");
+            var now         = DateTimeOffset.UtcNow;
 
-            // Atomic upsert so concurrent requests don't race past the limit
-            await db.Database.ExecuteSqlRawAsync("""
-                INSERT INTO "ApiCallUsage" ("UserId", "PeriodStart", "CallCount", "UpdatedAt")
-                VALUES ({0}, {1}, 1, NOW())
-                ON CONFLICT ("UserId", "PeriodStart")
-                DO UPDATE SET "CallCount" = "ApiCallUsage"."CallCount" + 1, "UpdatedAt" = NOW()
-                """, userId, periodStr);
+            var usage = await db.ApiCallUsage
+                .FirstOrDefaultAsync(u => u.UserId == userId && u.PeriodStart == periodStart);
+
+            if (usage is null)
+            {
+                db.ApiCallUsage.Add(new ApiCallUsage
+                {
+                    UserId      = userId,
+                    PeriodStart = periodStart,
+                    CallCount   = 1,
+                    UpdatedAt   = now,
+                });
+            }
+            else
+            {
+                usage.CallCount++;
+                usage.UpdatedAt = now;
+            }
+
+            await db.SaveChangesAsync();
         }
         catch (Exception ex)
         {
