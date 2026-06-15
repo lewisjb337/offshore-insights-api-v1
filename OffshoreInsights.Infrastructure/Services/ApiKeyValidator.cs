@@ -3,7 +3,9 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OffshoreInsights.Application.Features.ApiKeys.Abstractions;
+using OffshoreInsights.Application.Features.ApiKeys.Models;
 using OffshoreInsights.Domain.Entities;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Persistence.Contexts;
 
 namespace OffshoreInsights.Infrastructure.Services;
@@ -13,7 +15,9 @@ public class ApiKeyValidator(
     ApplicationDbContext context,
     IDbContextFactory<ApplicationDbContext> contextFactory) : IApiKeyValidator
 {
-    public async Task<bool> ValidateAsync(string rawKey, CancellationToken cancellationToken = default)
+    private const int FreePlanCallLimit = 100;
+
+    public async Task<ApiKeyValidationResult> ValidateAsync(string rawKey, CancellationToken cancellationToken = default)
     {
         var hash = ComputeHash(rawKey);
 
@@ -27,14 +31,63 @@ public class ApiKeyValidator(
         {
             logger.LogWarning("API key validation failed for prefix '{Prefix}'",
                 rawKey.Length >= 8 ? rawKey[..8] : rawKey);
-            return false;
+            return new ApiKeyValidationResult(false);
         }
 
-        // Fire-and-forget both writes using a dedicated factory context so we never
-        // compete with the request-scoped context that the controller will use next.
+        // Resolve the caller's subscription plan
+        var sub = await context.AccountSubscriptions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.UserId == apiKey.UserId, cancellationToken);
+
+        var plan = Enum.TryParse<AccountPlan>(sub?.Plan ?? "Free", out var p) ? p : AccountPlan.Free;
+
+        // For Free-tier: atomically increment the call counter and check the limit
+        // in a single SQL statement to eliminate the read-then-write race condition.
+        if (plan == AccountPlan.Free)
+        {
+            var periodStart = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var periodStr   = periodStart.ToString("yyyy-MM-dd");
+
+            var newCount = await context.Database
+                .SqlQueryRaw<int>("""
+                    INSERT INTO "ApiCallUsage" ("UserId", "PeriodStart", "CallCount", "UpdatedAt")
+                    VALUES ({0}, {1}, 1, NOW())
+                    ON CONFLICT ("UserId", "PeriodStart")
+                    DO UPDATE SET "CallCount" = "ApiCallUsage"."CallCount" + 1, "UpdatedAt" = NOW()
+                    RETURNING "CallCount"
+                    """, apiKey.UserId, periodStr)
+                .FirstAsync(cancellationToken);
+
+            if (newCount > FreePlanCallLimit)
+            {
+                logger.LogInformation("Free-tier rate limit reached for user {UserId}", apiKey.UserId);
+                return new ApiKeyValidationResult(true, apiKey.UserId, AccountPlan.Free, IsRateLimited: true);
+            }
+
+            // Usage already incremented above — only update LastUsedAt
+            _ = UpdateLastUsedAtAsync(apiKey.Id);
+            return new ApiKeyValidationResult(true, apiKey.UserId, plan);
+        }
+
+        // Paid plans: fire-and-forget LastUsedAt and usage increment
         _ = UpdateLastUsedAndIncrementUsageAsync(apiKey.Id, apiKey.UserId);
 
-        return true;
+        return new ApiKeyValidationResult(true, apiKey.UserId, plan);
+    }
+
+    private async Task UpdateLastUsedAtAsync(long apiKeyId)
+    {
+        try
+        {
+            await using var db = await contextFactory.CreateDbContextAsync();
+            await db.ApiKeys
+                .Where(k => k.Id == apiKeyId)
+                .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, DateTime.UtcNow));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to update LastUsedAt for API key ID {Id}", apiKeyId);
+        }
     }
 
     private async Task UpdateLastUsedAndIncrementUsageAsync(long apiKeyId, string userId)
@@ -43,12 +96,10 @@ public class ApiKeyValidator(
         {
             await using var db = await contextFactory.CreateDbContextAsync();
 
-            // 1. Stamp LastUsedAt on the key
             await db.ApiKeys
                 .Where(k => k.Id == apiKeyId)
                 .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, DateTime.UtcNow));
 
-            // 2. Upsert call count for the current billing period (1st of this month)
             var periodStart = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             var now         = DateTimeOffset.UtcNow;
 

@@ -3,4 +3,4 @@ using OffshoreInsights.Application.Features.Account.Responses;
 
 namespace OffshoreInsights.Application.Features.Account.Queries;
 
-public record GetAccountQuery : IRequest<AccountResponse>;
+public record GetAccountQuery(string UserId) : IRequest<AccountResponse>;

@@ -5,12 +5,14 @@ using OffshoreInsights.API.Helpers;
 using OffshoreInsights.Application.Features.Buoys.Queries;
 using OffshoreInsights.Application.Features.Buoys.Requests;
 using OffshoreInsights.Application.Features.Buoys.Responses;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Domain.Shared;
 
 namespace OffshoreInsights.API.Controllers;
 
 [ApiController]
 [RequireApiKey]
+[RequireMinPlan(AccountPlan.Professional)]
 public class BuoysController(ISender sender) : BaseController
 {
     /// <summary>

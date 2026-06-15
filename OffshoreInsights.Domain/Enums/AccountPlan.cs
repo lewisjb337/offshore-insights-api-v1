@@ -2,7 +2,8 @@ namespace OffshoreInsights.Domain.Enums;
 
 public enum AccountPlan
 {
-    Starter,
-    Professional,
-    Enterprise
+    Free         = 0,
+    Starter      = 1,
+    Professional = 2,
+    Enterprise   = 3,
 }

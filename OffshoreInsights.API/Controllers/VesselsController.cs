@@ -5,6 +5,7 @@ using OffshoreInsights.API.Helpers;
 using OffshoreInsights.Application.Features.Vessels.Queries;
 using OffshoreInsights.Application.Features.Vessels.Requests;
 using OffshoreInsights.Application.Features.Vessels.Responses;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Domain.Shared;
 
 namespace OffshoreInsights.API.Controllers;
@@ -20,6 +21,7 @@ public class VesselsController(ISender sender) : BaseController
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>The vessel matching the provided MMSI, or 404 if not found.</returns>
     [HttpGet("{mmsi:long}")]
+    [RequireMinPlan(AccountPlan.Starter)]
     public async Task<IActionResult> GetVesselByMmsiAsync([FromRoute] long mmsi, CancellationToken cancellationToken)
     {
         try
@@ -47,6 +49,7 @@ public class VesselsController(ISender sender) : BaseController
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>A paginated collection of vessels matching the specified filters.</returns>
     [HttpGet]
+    [RequireMinPlan(AccountPlan.Starter)]
     public async Task<IActionResult> GetVesselsAsync([FromQuery] GetVesselsRequest request, CancellationToken cancellationToken)
     {
         try
@@ -70,6 +73,7 @@ public class VesselsController(ISender sender) : BaseController
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>A paginated list of position snapshots ordered newest first, or 404 if the vessel is not found.</returns>
     [HttpGet("{mmsi:long}/track")]
+    [RequireMinPlan(AccountPlan.Starter)]
     public async Task<IActionResult> GetVesselTrackByMmsiAsync([FromRoute] long mmsi, [FromQuery] GetVesselTrackByMmsiRequest request, CancellationToken cancellationToken)
     {
         // Resolve a preset period into an absolute from value (custom from/to always win).

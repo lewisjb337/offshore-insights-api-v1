@@ -4,12 +4,14 @@ using OffshoreInsights.API.Attributes;
 using OffshoreInsights.Application.Features.Geofences.Queries;
 using OffshoreInsights.Application.Features.Geofences.Requests;
 using OffshoreInsights.Application.Features.Geofences.Responses;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Domain.Shared;
 
 namespace OffshoreInsights.API.Controllers;
 
 [ApiController]
 [RequireApiKey]
+[RequireMinPlan(AccountPlan.Professional)]
 public class GeofenceController(ISender sender) : BaseController
 {
     /// <summary>

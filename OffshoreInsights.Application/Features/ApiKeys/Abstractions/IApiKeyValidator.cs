@@ -1,14 +1,17 @@
+using OffshoreInsights.Application.Features.ApiKeys.Models;
+
 namespace OffshoreInsights.Application.Features.ApiKeys.Abstractions;
 
 public interface IApiKeyValidator
 {
     /// <summary>
-    /// Validates a raw API key against the database.
-    /// Hashes the key before lookup and checks it is active and not expired.
-    /// Updates <c>LastUsedAt</c> on a successful validation.
+    /// Validates a raw API key, resolves the caller's plan, and enforces Free-tier call limits.
     /// </summary>
-    /// <param name="rawKey">The key exactly as received from the request header.</param>
+    /// <param name="rawKey">The key exactly as received from the X-Api-Key header.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns><c>true</c> if the key is valid and active; otherwise <c>false</c>.</returns>
-    Task<bool> ValidateAsync(string rawKey, CancellationToken cancellationToken = default);
+    /// <returns>
+    /// A <see cref="ApiKeyValidationResult"/> with <c>IsValid = false</c> when the key is
+    /// unknown/expired, or <c>IsRateLimited = true</c> when the Free-plan monthly cap is reached.
+    /// </returns>
+    Task<ApiKeyValidationResult> ValidateAsync(string rawKey, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OffshoreInsights.Application.Features.Account.Abstractions;
 using OffshoreInsights.Application.Features.ApiKeys.Abstractions;
 using OffshoreInsights.Application.Features.Buoys.Abstractions;
 using OffshoreInsights.Application.Features.Geofences.Abstractions;
@@ -14,6 +15,7 @@ public static class Register
     public static void AddInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IApiKeyValidator, ApiKeyValidator>();
+        services.AddScoped<IAccountRepository, AccountData>();
         services.AddScoped<IBuoysData, BuoysData>();
         services.AddScoped<IGeofencesData, GeofencesData>();
         services.AddScoped<IVesselsData, VesselsData>();

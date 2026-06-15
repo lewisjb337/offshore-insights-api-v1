@@ -4,12 +4,14 @@ using OffshoreInsights.API.Attributes;
 using OffshoreInsights.Application.Features.Webhooks.Queries;
 using OffshoreInsights.Application.Features.Webhooks.Requests;
 using OffshoreInsights.Application.Features.Webhooks.Responses;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Domain.Shared;
 
 namespace OffshoreInsights.API.Controllers;
 
 [ApiController]
 [RequireApiKey]
+[RequireMinPlan(AccountPlan.Professional)]
 public class WebhooksController(ISender sender) : BaseController
 {
     /// <summary>

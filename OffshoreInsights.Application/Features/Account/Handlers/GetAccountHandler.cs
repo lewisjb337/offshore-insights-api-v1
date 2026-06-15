@@ -1,28 +1,35 @@
 using MediatR;
+using OffshoreInsights.Application.Features.Account.Abstractions;
 using OffshoreInsights.Application.Features.Account.Queries;
 using OffshoreInsights.Application.Features.Account.Responses;
 using OffshoreInsights.Domain.Enums;
 
 namespace OffshoreInsights.Application.Features.Account.Handlers;
 
-/// <summary>
-/// Returns account plan and usage information for the authenticated caller.
-/// TODO: Replace placeholder values with real data once auth and usage tracking are wired up.
-/// </summary>
-public class GetAccountHandler : IRequestHandler<GetAccountQuery, AccountResponse>
+public class GetAccountHandler(IAccountRepository repository) : IRequestHandler<GetAccountQuery, AccountResponse>
 {
-    public Task<AccountResponse> Handle(GetAccountQuery query, CancellationToken cancellationToken)
+    private static readonly Dictionary<AccountPlan, long?> CallLimits = new()
     {
-        // Placeholder — will be replaced with real per-user plan/usage data from auth context.
-        var response = new AccountResponse
-        {
-            Plan             = AccountPlan.Starter,
-            CallsThisPeriod  = 0,
-            CallLimit        = 1_000,
-            PeriodResetsAt   = new DateTimeOffset(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero).AddMonths(1),
-            IsRateLimited    = false
-        };
+        [AccountPlan.Free]         = 100,
+        [AccountPlan.Starter]      = 5_000,
+        [AccountPlan.Professional] = 50_000,
+        [AccountPlan.Enterprise]   = null, // unlimited
+    };
 
-        return Task.FromResult(response);
+    public async Task<AccountResponse> Handle(GetAccountQuery query, CancellationToken cancellationToken)
+    {
+        var summary = await repository.GetSummaryAsync(query.UserId, cancellationToken);
+        var limit   = CallLimits.GetValueOrDefault(summary.Plan, 100);
+
+        return new AccountResponse
+        {
+            Plan            = summary.Plan,
+            Status          = summary.Status,
+            CallsThisPeriod = summary.CallsThisPeriod,
+            CallLimit       = limit,
+            PeriodStart     = summary.PeriodStart,
+            PeriodResetsAt  = summary.PeriodEnd,
+            IsRateLimited   = limit.HasValue && summary.CallsThisPeriod >= limit.Value,
+        };
     }
 }

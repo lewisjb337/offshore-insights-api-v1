@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using OffshoreInsights.Application.Features.ApiKeys.Abstractions;
+using OffshoreInsights.Domain.Enums;
 using OffshoreInsights.Domain.Shared;
 
 namespace OffshoreInsights.API.Filters;
 
 /// <summary>
-/// Action filter that validates the <c>X-Api-Key</c> request header against the database.
-/// Applied via <see cref="Attributes.RequireApiKeyAttribute"/>.
-/// Returns 401 if the header is absent and 403 if the key is invalid or expired.
+/// Action filter that validates the X-Api-Key request header, resolves the caller's plan,
+/// and enforces the Free-tier monthly call limit.
+/// Stores UserId and UserPlan in HttpContext.Items for downstream filters.
+/// Returns 401 (missing key), 403 (invalid/expired), or 429 (rate limited).
 /// </summary>
 public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
 {
@@ -24,9 +26,9 @@ public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
             return;
         }
 
-        var isValid = await validator.ValidateAsync(values.ToString(), context.HttpContext.RequestAborted);
+        var result = await validator.ValidateAsync(values.ToString(), context.HttpContext.RequestAborted);
 
-        if (!isValid)
+        if (!result.IsValid)
         {
             context.Result = new ObjectResult(
                 ApiResponse<object>.Fail("The provided API key is invalid or has expired."))
@@ -35,6 +37,20 @@ public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
             };
             return;
         }
+
+        if (result.IsRateLimited)
+        {
+            context.Result = new ObjectResult(
+                ApiResponse<object>.Fail("Monthly call limit reached. Upgrade your plan to continue."))
+            {
+                StatusCode = StatusCodes.Status429TooManyRequests
+            };
+            return;
+        }
+
+        // Make identity available to downstream filters (e.g. PlanAuthFilter) and handlers
+        context.HttpContext.Items["UserId"]   = result.UserId;
+        context.HttpContext.Items["UserPlan"] = result.Plan;
 
         await next();
     }

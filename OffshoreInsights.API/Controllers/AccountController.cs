@@ -22,7 +22,8 @@ public class AccountController(ISender sender) : BaseController
     {
         try
         {
-            var response = await sender.Send(new GetAccountQuery(), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new GetAccountQuery(userId), cancellationToken);
 
             return Ok(ApiResponse<AccountResponse>.Ok(response));
         }
