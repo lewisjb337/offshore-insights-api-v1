@@ -11,6 +11,7 @@ namespace OffshoreInsights.API.Filters;
 /// and enforces the Free-tier monthly call limit.
 /// Stores UserId and UserPlan in HttpContext.Items for downstream filters.
 /// Returns 401 (missing key), 403 (invalid/expired), or 429 (rate limited).
+/// Usage is only recorded for 2xx responses — 403/404/5xx do not count against quotas.
 /// </summary>
 public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
 {
@@ -48,10 +49,20 @@ public class ApiKeyAuthFilter(IApiKeyValidator validator) : IAsyncActionFilter
             return;
         }
 
-        // Make identity available to downstream filters (e.g. PlanAuthFilter) and handlers
         context.HttpContext.Items["UserId"]   = result.UserId;
         context.HttpContext.Items["UserPlan"] = result.Plan;
 
-        await next();
+        var executed = await next();
+
+        // Only count calls that produced a successful response.
+        // 403 (plan restriction), 404, 400, 5xx etc. do not consume quota.
+        var statusCode = (executed.Result as ObjectResult)?.StatusCode
+            ?? (executed.Result as StatusCodeResult)?.StatusCode
+            ?? context.HttpContext.Response.StatusCode;
+
+        if (executed.Exception is null && statusCode is >= 200 and < 300)
+        {
+            _ = validator.RecordUsageAsync(result.UserId!, result.ApiKeyId);
+        }
     }
 }

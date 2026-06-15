@@ -9,5 +9,6 @@ public record ApiKeyValidationResult(
     bool IsValid,
     string? UserId = null,
     AccountPlan Plan = AccountPlan.Free,
-    bool IsRateLimited = false
+    bool IsRateLimited = false,
+    long ApiKeyId = 0
 );

@@ -14,4 +14,11 @@ public interface IApiKeyValidator
     /// unknown/expired, or <c>IsRateLimited = true</c> when the Free-plan monthly cap is reached.
     /// </returns>
     Task<ApiKeyValidationResult> ValidateAsync(string rawKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Records a successful API call: stamps LastUsedAt and increments the monthly usage counter.
+    /// Only call this when the response status is 2xx — do not count failed/forbidden requests.
+    /// Fire-and-forget safe; swallows exceptions internally.
+    /// </summary>
+    Task RecordUsageAsync(string userId, long apiKeyId);
 }
