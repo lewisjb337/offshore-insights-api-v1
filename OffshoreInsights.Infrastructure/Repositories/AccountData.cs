@@ -14,8 +14,10 @@ public class AccountData(ApplicationDbContext context) : IAccountRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.UserId == userId, cancellationToken);
 
-        var plan   = Enum.TryParse<AccountPlan>(sub?.Plan ?? "Free", out var p) ? p : AccountPlan.Free;
-        var status = sub?.Status ?? "Active";
+        // Pending = checkout abandoned, no confirmed subscription — same logic as frontend
+        var planStr = (sub is null || sub.Status == "Pending") ? "Free" : sub.Plan;
+        var plan    = Enum.TryParse<AccountPlan>(planStr, out var p) ? p : AccountPlan.Free;
+        var status  = (sub is null || sub.Status == "Pending") ? "Active" : sub.Status;
 
         // Billing period: use Stripe's period if available, otherwise calendar month
         var now            = DateTimeOffset.UtcNow;

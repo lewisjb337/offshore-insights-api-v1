@@ -38,7 +38,10 @@ public class ApiKeyValidator(
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.UserId == apiKey.UserId, cancellationToken);
 
-        var plan = Enum.TryParse<AccountPlan>(sub?.Plan ?? "Free", out var p) ? p : AccountPlan.Free;
+        // A "Pending" status means a checkout was started but never completed.
+        // Treat it as Free — the same logic the frontend applies when StripeSubscriptionId is null.
+        var planStr = (sub is null || sub.Status == "Pending") ? "Free" : sub.Plan;
+        var plan = Enum.TryParse<AccountPlan>(planStr, out var p) ? p : AccountPlan.Free;
 
         // Free-tier: check the current call count without incrementing.
         // The increment happens in RecordUsageAsync, called by the filter only after a 2xx response.
