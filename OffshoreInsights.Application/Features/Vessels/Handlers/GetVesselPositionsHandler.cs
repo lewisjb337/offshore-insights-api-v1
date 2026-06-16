@@ -14,7 +14,7 @@ public class GetVesselPositionsHandler(IVesselsData vesselsData) : IRequestHandl
 
         return new PagedResponse<VesselPositionResponse>
         {
-            Items = results.Items.Select(vessel => (VesselPositionResponse)vessel),
+            Items = results.Items.Select(vessel => new VesselPositionResponse(vessel)),
             Page = results.Page,
             PageSize = results.PageSize,
             TotalCount = results.TotalCount,
