@@ -48,6 +48,7 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (app.Environment.IsDevelopment())
 {
+    // Keep scalar hidden on live
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
