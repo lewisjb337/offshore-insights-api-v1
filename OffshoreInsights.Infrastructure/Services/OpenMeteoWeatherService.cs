@@ -5,8 +5,10 @@ using OffshoreInsights.Application.Features.Weather;
 
 namespace OffshoreInsights.Infrastructure.Services;
 
-public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogger<OpenMeteoWeatherService> logger) : IWeatherService
+public class OpenMeteoWeatherService(ILogger<OpenMeteoWeatherService> logger) : IWeatherService
 {
+    private static readonly HttpClient Http = new();
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -15,10 +17,8 @@ public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogg
 
     public async Task<WeatherConditions?> GetConditionsAsync(double latitude, double longitude, CancellationToken cancellationToken = default)
     {
-        var client = httpClientFactory.CreateClient("OpenMeteo");
-
-        var atmosphericTask = FetchAtmosphericAsync(client, latitude, longitude, cancellationToken);
-        var marineTask      = FetchMarineAsync(client, latitude, longitude, cancellationToken);
+        var atmosphericTask = FetchAtmosphericAsync(latitude, longitude, cancellationToken);
+        var marineTask      = FetchMarineAsync(latitude, longitude, cancellationToken);
 
         await Task.WhenAll(atmosphericTask, marineTask);
 
@@ -54,7 +54,7 @@ public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogg
         };
     }
 
-    private async Task<AtmosphericResponse?> FetchAtmosphericAsync(HttpClient client, double lat, double lon, CancellationToken ct)
+    private async Task<AtmosphericResponse?> FetchAtmosphericAsync(double lat, double lon, CancellationToken ct)
     {
         const string fields = "temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m," +
                               "relative_humidity_2m,surface_pressure,visibility,weather_code,cloud_cover";
@@ -64,7 +64,7 @@ public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogg
 
         try
         {
-            var json = await client.GetStringAsync(url, ct);
+            var json = await Http.GetStringAsync(url, ct);
             return JsonSerializer.Deserialize<AtmosphericResponse>(json, JsonOptions);
         }
         catch (Exception ex)
@@ -74,7 +74,7 @@ public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogg
         }
     }
 
-    private async Task<MarineResponse?> FetchMarineAsync(HttpClient client, double lat, double lon, CancellationToken ct)
+    private async Task<MarineResponse?> FetchMarineAsync(double lat, double lon, CancellationToken ct)
     {
         const string fields = "wave_height,wave_direction,wave_period," +
                               "swell_wave_height,swell_wave_direction,swell_wave_period," +
@@ -85,7 +85,7 @@ public class OpenMeteoWeatherService(IHttpClientFactory httpClientFactory, ILogg
 
         try
         {
-            var json = await client.GetStringAsync(url, ct);
+            var json = await Http.GetStringAsync(url, ct);
             return JsonSerializer.Deserialize<MarineResponse>(json, JsonOptions);
         }
         catch (Exception ex)

@@ -22,7 +22,6 @@ public static class Register
         services.AddScoped<IVesselsData, VesselsData>();
         services.AddScoped<IWebhooksData, WebhooksData>();
 
-        services.AddHttpClient("OpenMeteo");
         services.AddScoped<IWeatherService, OpenMeteoWeatherService>();
     }
 }
