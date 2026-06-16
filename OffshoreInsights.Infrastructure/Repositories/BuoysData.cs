@@ -42,7 +42,6 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
         try
         {
             var buoy = await context.Buoys
-                .Include(b => b.CurrentPosition)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
 
@@ -50,6 +49,32 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
             {
                 logger.LogWarning("Buoy with ID {Id} not found", request.Id);
                 throw new KeyNotFoundException($"Buoy with ID {request.Id} not found.");
+            }
+
+            // Derive current position from the most recent history record
+            var latest = await context.BuoyPositionHistory
+                .AsNoTracking()
+                .Where(h => h.BuoyId == request.Id)
+                .OrderByDescending(h => h.PositionTimestamp)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (latest is not null)
+            {
+                buoy.CurrentPosition = new BuoyCurrentPosition
+                {
+                    Id                     = latest.Id,
+                    BuoyId                 = latest.BuoyId,
+                    Latitude               = latest.Latitude,
+                    Longitude              = latest.Longitude,
+                    WaterTemperatureCelsius = latest.WaterTemperatureCelsius,
+                    AirTemperatureCelsius  = latest.AirTemperatureCelsius,
+                    WindSpeedKnots         = latest.WindSpeedKnots,
+                    WindDirectionDegrees   = latest.WindDirectionDegrees,
+                    WaveHeightMetres       = latest.WaveHeightMetres,
+                    WavePeriodSeconds      = latest.WavePeriodSeconds,
+                    AirPressureHpa         = latest.AirPressureHpa,
+                    PositionTimestamp      = latest.PositionTimestamp,
+                };
             }
 
             logger.LogInformation("Successfully fetched position for buoy with ID {Id}", request.Id);

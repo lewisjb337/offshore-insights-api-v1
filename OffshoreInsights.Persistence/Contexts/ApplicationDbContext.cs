@@ -13,7 +13,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ApiCallUsage> ApiCallUsage { get; set; }
     public DbSet<AccountSubscription> AccountSubscriptions { get; set; }
     public DbSet<Buoy> Buoys { get; set; }
-    public DbSet<BuoyCurrentPosition> BuoyCurrentPositions { get; set; }
     public DbSet<BuoyPositionHistory> BuoyPositionHistory { get; set; }
     public DbSet<Geofence> Geofences { get; set; }
     public DbSet<GeofenceEvent> GeofenceEvents { get; set; }
