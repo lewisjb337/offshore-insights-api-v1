@@ -25,7 +25,8 @@ public class GeofenceController(ISender sender) : BaseController
     {
         try
         {
-            var response = await sender.Send(new GetGeofencesQuery(request), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new GetGeofencesQuery(request with { UserId = userId }), cancellationToken);
 
             return Ok(ApiResponse<PagedResponse<GeofenceResponse>>.Ok(response));
         }
@@ -46,7 +47,8 @@ public class GeofenceController(ISender sender) : BaseController
     {
         try
         {
-            var response = await sender.Send(new CreateGeofenceCommand(request), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new CreateGeofenceCommand(request with { UserId = userId }), cancellationToken);
 
             return CreatedAtAction(nameof(GetGeofencesAsync), ApiResponse<GeofenceResponse>.Ok(response));
         }
@@ -62,12 +64,13 @@ public class GeofenceController(ISender sender) : BaseController
     /// <param name="id">The unique identifier of the geofence to delete.</param>
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>204 No Content on success, or 404 if the geofence is not found.</returns>
-    [HttpDelete("{id:long}")]
-    public async Task<IActionResult> DeleteGeofenceAsync([FromRoute] long id, CancellationToken cancellationToken)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteGeofenceAsync([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            await sender.Send(new DeleteGeofenceCommand(new DeleteGeofenceRequest(id)), cancellationToken);
+            var userId = HttpContext.Items["UserId"] as string ?? string.Empty;
+            await sender.Send(new DeleteGeofenceCommand(new DeleteGeofenceRequest(id, userId)), cancellationToken);
 
             return NoContent();
         }
@@ -88,12 +91,13 @@ public class GeofenceController(ISender sender) : BaseController
     /// <param name="request">Optional time range and pagination parameters.</param>
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>A paginated list of geofence events ordered newest first, or 404 if the geofence is not found.</returns>
-    [HttpGet("{id:long}/events")]
-    public async Task<IActionResult> GetGeofenceEventsAsync([FromRoute] long id, [FromQuery] GetGeofenceEventsRequest request, CancellationToken cancellationToken)
+    [HttpGet("{id:guid}/events")]
+    public async Task<IActionResult> GetGeofenceEventsAsync([FromRoute] Guid id, [FromQuery] GetGeofenceEventsRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            var response = await sender.Send(new GetGeofenceEventsQuery(request with { Id = id }), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new GetGeofenceEventsQuery(request with { Id = id, UserId = userId }), cancellationToken);
 
             return Ok(ApiResponse<PagedResponse<GeofenceEventResponse>>.Ok(response));
         }

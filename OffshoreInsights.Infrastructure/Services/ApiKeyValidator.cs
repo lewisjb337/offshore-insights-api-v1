@@ -24,7 +24,7 @@ public class ApiKeyValidator(
         var apiKey = await context.ApiKeys
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                k => k.KeyHash == hash && k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTime.UtcNow),
+                k => k.KeyHash == hash && k.IsActive && (k.ExpiresAt == null || k.ExpiresAt > DateTimeOffset.UtcNow),
                 cancellationToken);
 
         if (apiKey is null)
@@ -71,7 +71,7 @@ public class ApiKeyValidator(
 
             await db.ApiKeys
                 .Where(k => k.Id == apiKeyId)
-                .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, DateTime.UtcNow));
+                .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, DateTimeOffset.UtcNow));
 
             var periodStart = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
             var now         = DateTimeOffset.UtcNow;

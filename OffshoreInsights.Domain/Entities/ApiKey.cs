@@ -17,7 +17,7 @@ public class ApiKey
     public string KeyPrefix { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
-    public DateTime? ExpiresAt { get; set; }
-    public DateTime? LastUsedAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
+    public DateTimeOffset? LastUsedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }

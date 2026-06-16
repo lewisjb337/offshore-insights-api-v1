@@ -11,5 +11,7 @@ public class BuoyConfiguration : ExternalEntityConfiguration<Buoy>
     {
         builder.ToTable("Buoys");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnType("uuid");
+        builder.Ignore(x => x.CurrentPosition);
     }
 }

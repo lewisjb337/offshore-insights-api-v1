@@ -19,7 +19,7 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
         {
             var result = await context.Buoys
                 .AsNoTracking()
-                .OrderBy(b => b.Id)
+                .OrderBy(b => b.Mmsi)
                 .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
             logger.LogInformation(
@@ -51,31 +51,12 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
                 throw new KeyNotFoundException($"Buoy with ID {request.Id} not found.");
             }
 
-            // Derive current position from the most recent history record
-            var latest = await context.BuoyPositionHistory
+            // Latest position from history, linked via Mmsi
+            buoy.CurrentPosition = await context.BuoyPositionHistory
                 .AsNoTracking()
-                .Where(h => h.BuoyId == request.Id)
-                .OrderByDescending(h => h.PositionTimestamp)
+                .Where(h => h.BuoyMmsi == buoy.Mmsi)
+                .OrderByDescending(h => h.ReceivedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-
-            if (latest is not null)
-            {
-                buoy.CurrentPosition = new BuoyCurrentPosition
-                {
-                    Id                     = latest.Id,
-                    BuoyId                 = latest.BuoyId,
-                    Latitude               = latest.Latitude,
-                    Longitude              = latest.Longitude,
-                    WaterTemperatureCelsius = latest.WaterTemperatureCelsius,
-                    AirTemperatureCelsius  = latest.AirTemperatureCelsius,
-                    WindSpeedKnots         = latest.WindSpeedKnots,
-                    WindDirectionDegrees   = latest.WindDirectionDegrees,
-                    WaveHeightMetres       = latest.WaveHeightMetres,
-                    WavePeriodSeconds      = latest.WavePeriodSeconds,
-                    AirPressureHpa         = latest.AirPressureHpa,
-                    PositionTimestamp      = latest.PositionTimestamp,
-                };
-            }
 
             logger.LogInformation("Successfully fetched position for buoy with ID {Id}", request.Id);
 
@@ -96,11 +77,11 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
 
         try
         {
-            var buoyExists = await context.Buoys
+            var buoy = await context.Buoys
                 .AsNoTracking()
-                .AnyAsync(b => b.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
 
-            if (!buoyExists)
+            if (buoy is null)
             {
                 logger.LogWarning("Buoy with ID {Id} not found", request.Id);
                 throw new KeyNotFoundException($"Buoy with ID {request.Id} not found.");
@@ -108,17 +89,17 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
 
             var query = context.BuoyPositionHistory
                 .AsNoTracking()
-                .Where(h => h.BuoyId == request.Id)
+                .Where(h => h.BuoyMmsi == buoy.Mmsi)
                 .AsQueryable();
 
             if (request.From.HasValue)
-                query = query.Where(h => h.PositionTimestamp >= request.From);
+                query = query.Where(h => h.ReceivedAt >= request.From);
 
             if (request.To.HasValue)
-                query = query.Where(h => h.PositionTimestamp <= request.To);
+                query = query.Where(h => h.ReceivedAt <= request.To);
 
             var result = await query
-                .OrderByDescending(h => h.PositionTimestamp)
+                .OrderByDescending(h => h.ReceivedAt)
                 .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
             logger.LogInformation(

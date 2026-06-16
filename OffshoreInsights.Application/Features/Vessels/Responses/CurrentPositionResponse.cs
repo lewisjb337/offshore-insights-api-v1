@@ -37,7 +37,7 @@ public class CurrentPositionResponse
     public double? Heading { get; set; }
 
     /// <summary>Rate of turn in degrees per minute (positive = turning right, negative = turning left).</summary>
-    public double? Rot { get; set; }
+    public short? Rot { get; set; }
 
     public NavStatus? NavStatus { get; set; }
     public DateTime? PositionTimestamp { get; set; }
@@ -51,5 +51,5 @@ public class CurrentPositionResponse
     public string? Destination { get; set; }
 
     /// <summary>Estimated time of arrival as broadcast via AIS (UTC).</summary>
-    public DateTime? Eta { get; set; }
+    public DateTimeOffset? Eta { get; set; }
 }

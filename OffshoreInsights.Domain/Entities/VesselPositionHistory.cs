@@ -13,8 +13,8 @@ public class VesselPositionHistory
     public double? Cog { get; set; }
     public double? Heading { get; set; }
 
-    /// <summary>Rate of turn in degrees per minute. Stored as long to match the raw AIS integer value.</summary>
-    public long? Rot { get; set; }
+    /// <summary>Rate of turn (raw AIS integer, smallint in DB).</summary>
+    public short? Rot { get; set; }
 
     /// <summary>NavStatus stored as the raw AIS integer to preserve full fidelity.</summary>
     public long? NavStatus { get; set; }
@@ -30,5 +30,5 @@ public class VesselPositionHistory
     public string? Destination { get; set; }
 
     /// <summary>ETA broadcast at the time of this position fix.</summary>
-    public DateTime? Eta { get; set; }
+    public DateTimeOffset? Eta { get; set; }
 }

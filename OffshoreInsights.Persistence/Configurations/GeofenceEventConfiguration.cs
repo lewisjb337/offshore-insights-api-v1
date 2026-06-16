@@ -9,18 +9,24 @@ public class GeofenceEventConfiguration : ExternalEntityConfiguration<GeofenceEv
 {
     protected override void PostConfigure(EntityTypeBuilder<GeofenceEvent> builder)
     {
-        builder.ToTable("GeofenceEvents");
+        builder.ToTable("geofence_notifications");
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.EventType)
-            .HasConversion<string>();
-
-        builder.HasOne(x => x.Geofence)
-            .WithMany(x => x.Events)
-            .HasForeignKey(x => x.GeofenceId);
-
-        builder.HasIndex(x => new { x.GeofenceId, x.OccurredAt })
-            .IsDescending(false, true)
-            .HasDatabaseName("idx_geofence_events_geofence_occurred");
+        builder.Property(x => x.Id).HasColumnName("id").HasColumnType("uuid");
+        builder.Property(x => x.UserId).HasColumnName("user_id").HasColumnType("uuid");
+        builder.Property(x => x.GeofenceId).HasColumnName("geofence_id").HasColumnType("uuid");
+        builder.Property(x => x.GeofenceName).HasColumnName("geofence_name");
+        builder.Property(x => x.VesselId).HasColumnName("vessel_id");
+        builder.Property(x => x.VesselName).HasColumnName("vessel_name");
+        builder.Property(x => x.VesselType).HasColumnName("vessel_type");
+        builder.Property(x => x.EventType).HasColumnName("event_type");
+        builder.Property(x => x.SourceType).HasColumnName("source_type");
+        builder.Property(x => x.EnteredAt).HasColumnName("entered_at");
+        builder.Property(x => x.ExitedAt).HasColumnName("exited_at");
+        builder.Property(x => x.DurationMinutes).HasColumnName("duration_minutes");
+        builder.Property(x => x.Read).HasColumnName("read");
+        builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+        builder.Property(x => x.BuoyName).HasColumnName("buoy_name");
+        builder.Property(x => x.BuoyMmsi).HasColumnName("buoy_mmsi");
     }
 }

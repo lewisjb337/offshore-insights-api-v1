@@ -1,5 +1,4 @@
 using OffshoreInsights.Domain.Entities;
-using OffshoreInsights.Domain.Enums;
 
 namespace OffshoreInsights.Application.Features.Geofences.Responses;
 
@@ -7,26 +6,38 @@ public class GeofenceEventResponse
 {
     public GeofenceEventResponse() { }
 
-    internal GeofenceEventResponse(GeofenceEvent geofenceEvent)
+    internal GeofenceEventResponse(GeofenceEvent e)
     {
-        Id          = geofenceEvent.Id;
-        GeofenceId  = geofenceEvent.GeofenceId;
-        EventType   = geofenceEvent.EventType;
-        Mmsi        = geofenceEvent.Mmsi;
-        BuoyId      = geofenceEvent.BuoyId;
-        OccurredAt  = geofenceEvent.OccurredAt;
-        Latitude    = geofenceEvent.Latitude;
-        Longitude   = geofenceEvent.Longitude;
+        Id              = e.Id;
+        GeofenceId      = e.GeofenceId;
+        GeofenceName    = e.GeofenceName;
+        EventType       = e.EventType;
+        SourceType      = e.SourceType;
+        VesselId        = e.VesselId;
+        VesselName      = e.VesselName;
+        VesselType      = e.VesselType;
+        BuoyMmsi        = e.BuoyMmsi;
+        BuoyName        = e.BuoyName;
+        EnteredAt       = e.EnteredAt;
+        ExitedAt        = e.ExitedAt;
+        DurationMinutes = e.DurationMinutes;
+        CreatedAt       = e.CreatedAt;
     }
 
-    public long Id { get; set; }
-    public long GeofenceId { get; set; }
-    public GeofenceEventType EventType { get; set; }
-    public long? Mmsi { get; set; }
-    public long? BuoyId { get; set; }
-    public DateTime OccurredAt { get; set; }
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+    public Guid Id { get; set; }
+    public Guid? GeofenceId { get; set; }
+    public string? GeofenceName { get; set; }
+    public string EventType { get; set; } = string.Empty;
+    public string SourceType { get; set; } = string.Empty;
+    public long? VesselId { get; set; }
+    public string? VesselName { get; set; }
+    public string? VesselType { get; set; }
+    public long? BuoyMmsi { get; set; }
+    public string? BuoyName { get; set; }
+    public DateTimeOffset? EnteredAt { get; set; }
+    public DateTimeOffset? ExitedAt { get; set; }
+    public int? DurationMinutes { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
-    public static implicit operator GeofenceEventResponse(GeofenceEvent geofenceEvent) => new(geofenceEvent);
+    public static implicit operator GeofenceEventResponse(GeofenceEvent e) => new(e);
 }

@@ -1,6 +1,4 @@
-using System.Text.Json;
 using OffshoreInsights.Domain.Entities;
-using OffshoreInsights.Domain.Enums;
 
 namespace OffshoreInsights.Application.Features.Geofences.Responses;
 
@@ -8,34 +6,34 @@ public class GeofenceResponse
 {
     public GeofenceResponse() { }
 
-    internal GeofenceResponse(Geofence geofence)
+    internal GeofenceResponse(Geofence g)
     {
-        Id              = geofence.Id;
-        Name            = geofence.Name;
-        Type            = geofence.Type;
-        CenterLatitude  = geofence.CenterLatitude;
-        CenterLongitude = geofence.CenterLongitude;
-        RadiusMetres    = geofence.RadiusMetres;
-        CreatedAt       = geofence.CreatedAt;
-
-        Coordinates = geofence.CoordinatesJson is not null
-            ? JsonSerializer.Deserialize<IEnumerable<double[]>>(geofence.CoordinatesJson)
-            : null;
-
-        TargetMmsis = geofence.TargetMmsisJson is not null
-            ? JsonSerializer.Deserialize<IEnumerable<long>>(geofence.TargetMmsisJson)
-            : null;
+        Id                    = g.Id;
+        Name                  = g.Name;
+        ShapeType             = g.ShapeType;
+        Colour                = g.Colour;
+        Geometry              = g.Geometry;
+        CircleCenter          = g.CircleCenter;
+        CircleRadiusKm        = g.CircleRadiusKm;
+        VesselTypeFilter      = g.VesselTypeFilter;
+        NotificationsEnabled  = g.NotificationsEnabled;
+        WatchedBuoyMmsi       = g.WatchedBuoyMmsi;
+        CreatedAt             = g.CreatedAt;
+        UpdatedAt             = g.UpdatedAt;
     }
 
-    public long Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public GeofenceType Type { get; set; }
-    public double? CenterLatitude { get; set; }
-    public double? CenterLongitude { get; set; }
-    public double? RadiusMetres { get; set; }
-    public IEnumerable<double[]>? Coordinates { get; set; }
-    public IEnumerable<long>? TargetMmsis { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+    public string ShapeType { get; set; } = string.Empty;
+    public string? Colour { get; set; }
+    public string Geometry { get; set; } = string.Empty;
+    public string? CircleCenter { get; set; }
+    public decimal? CircleRadiusKm { get; set; }
+    public string[]? VesselTypeFilter { get; set; }
+    public bool NotificationsEnabled { get; set; }
+    public long? WatchedBuoyMmsi { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
-    public static implicit operator GeofenceResponse(Geofence geofence) => new(geofence);
+    public static implicit operator GeofenceResponse(Geofence g) => new(g);
 }

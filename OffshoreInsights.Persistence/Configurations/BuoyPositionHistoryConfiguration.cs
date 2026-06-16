@@ -11,9 +11,5 @@ public class BuoyPositionHistoryConfiguration : ExternalEntityConfiguration<Buoy
     {
         builder.ToTable("BuoyPositionHistory");
         builder.HasKey(x => x.Id);
-
-        builder.HasIndex(x => new { x.BuoyId, x.PositionTimestamp })
-            .IsDescending(false, true)
-            .HasDatabaseName("idx_buoy_position_history_buoy_timestamp");
     }
 }

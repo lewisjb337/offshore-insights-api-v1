@@ -15,7 +15,7 @@ namespace OffshoreInsights.API.Controllers;
 public class WebhooksController(ISender sender) : BaseController
 {
     /// <summary>
-    /// Retrieves a paginated list of registered webhooks and their delivery status.
+    /// Retrieves a paginated list of registered webhooks for the account.
     /// </summary>
     /// <param name="request">Pagination parameters: page and page size.</param>
     /// <param name="cancellationToken">Token to cancel the request.</param>
@@ -25,7 +25,8 @@ public class WebhooksController(ISender sender) : BaseController
     {
         try
         {
-            var response = await sender.Send(new GetWebhooksQuery(request), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new GetWebhooksQuery(request with { UserId = userId }), cancellationToken);
 
             return Ok(ApiResponse<PagedResponse<WebhookResponse>>.Ok(response));
         }
@@ -38,7 +39,7 @@ public class WebhooksController(ISender sender) : BaseController
     /// <summary>
     /// Registers a webhook endpoint URL to receive geofence and alert event notifications.
     /// </summary>
-    /// <param name="request">The webhook URL and optional signing secret.</param>
+    /// <param name="request">The webhook URL, signing secret, and event types to subscribe to.</param>
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>The newly registered webhook.</returns>
     [HttpPost]
@@ -46,7 +47,8 @@ public class WebhooksController(ISender sender) : BaseController
     {
         try
         {
-            var response = await sender.Send(new RegisterWebhookCommand(request), cancellationToken);
+            var userId   = HttpContext.Items["UserId"] as string ?? string.Empty;
+            var response = await sender.Send(new RegisterWebhookCommand(request with { UserId = userId }), cancellationToken);
 
             return CreatedAtAction(nameof(GetWebhooksAsync), ApiResponse<WebhookResponse>.Ok(response));
         }
@@ -62,12 +64,13 @@ public class WebhooksController(ISender sender) : BaseController
     /// <param name="id">The unique identifier of the webhook to remove.</param>
     /// <param name="cancellationToken">Token to cancel the request.</param>
     /// <returns>204 No Content on success, or 404 if the webhook is not found.</returns>
-    [HttpDelete("{id:long}")]
-    public async Task<IActionResult> DeleteWebhookAsync([FromRoute] long id, CancellationToken cancellationToken)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteWebhookAsync([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            await sender.Send(new DeleteWebhookCommand(new DeleteWebhookRequest(id)), cancellationToken);
+            var userId = HttpContext.Items["UserId"] as string ?? string.Empty;
+            await sender.Send(new DeleteWebhookCommand(new DeleteWebhookRequest(id, userId)), cancellationToken);
 
             return NoContent();
         }

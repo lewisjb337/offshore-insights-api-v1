@@ -40,7 +40,7 @@ public class VesselTrackPointResponse
     public double? Heading { get; set; }
 
     /// <summary>Rate of turn in degrees per minute.</summary>
-    public long? Rot { get; set; }
+    public short? Rot { get; set; }
 
     /// <summary>Navigational status as the raw AIS integer value.</summary>
     public long? NavStatus { get; set; }
@@ -56,5 +56,5 @@ public class VesselTrackPointResponse
     public string? Destination { get; set; }
 
     /// <summary>ETA broadcast at the time of this fix (UTC).</summary>
-    public DateTime? Eta { get; set; }
+    public DateTimeOffset? Eta { get; set; }
 }

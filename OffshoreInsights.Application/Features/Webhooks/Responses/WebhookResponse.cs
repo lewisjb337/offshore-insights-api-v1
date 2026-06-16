@@ -1,5 +1,4 @@
 using OffshoreInsights.Domain.Entities;
-using OffshoreInsights.Domain.Enums;
 
 namespace OffshoreInsights.Application.Features.Webhooks.Responses;
 
@@ -7,22 +6,22 @@ public class WebhookResponse
 {
     public WebhookResponse() { }
 
-    internal WebhookResponse(Webhook webhook)
+    internal WebhookResponse(Webhook w)
     {
-        Id             = webhook.Id;
-        Url            = webhook.Url;
-        DeliveryStatus = webhook.DeliveryStatus;
-        LastDeliveredAt = webhook.LastDeliveredAt;
-        FailureCount   = webhook.FailureCount;
-        CreatedAt      = webhook.CreatedAt;
+        Id        = w.Id;
+        Url       = w.Url;
+        Events    = w.Events;
+        IsActive  = w.IsActive;
+        CreatedAt = w.CreatedAt;
+        UpdatedAt = w.UpdatedAt;
     }
 
-    public long Id { get; set; }
+    public Guid Id { get; set; }
     public string Url { get; set; } = string.Empty;
-    public WebhookDeliveryStatus DeliveryStatus { get; set; }
-    public DateTime? LastDeliveredAt { get; set; }
-    public int FailureCount { get; set; }
+    public string[] Events { get; set; } = [];
+    public bool IsActive { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
-    public static implicit operator WebhookResponse(Webhook webhook) => new(webhook);
+    public static implicit operator WebhookResponse(Webhook w) => new(w);
 }

@@ -78,7 +78,7 @@ public class VesselsController(ISender sender) : BaseController
     {
         // Resolve a preset period into an absolute from value (custom from/to always win).
         if (request.Period.HasValue && !request.From.HasValue)
-            request = request with { From = TrackPeriodHelper.ToFromUtc(request.Period.Value) };
+            request = request with { From = TrackPeriodHelper.ToFromUtc(request.Period.Value).UtcDateTime };
 
         if (!request.From.HasValue && !request.To.HasValue)
             return BadRequest(ApiResponse<PagedResponse<VesselTrackPointResponse>>.Fail(
