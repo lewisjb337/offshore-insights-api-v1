@@ -37,34 +37,33 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
 
     public async Task<Buoy> GetBuoyPositionByIdAsync(GetBuoyPositionByIdRequest request, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Fetching current position for buoy with ID {Id}", request.Id);
+        logger.LogInformation("Fetching current position for buoy MMSI {Mmsi}", request.Mmsi);
 
         try
         {
             var buoy = await context.Buoys
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(b => b.Mmsi == request.Mmsi, cancellationToken);
 
             if (buoy is null)
             {
-                logger.LogWarning("Buoy with ID {Id} not found", request.Id);
-                throw new KeyNotFoundException($"Buoy with ID {request.Id} not found.");
+                logger.LogWarning("Buoy with MMSI {Mmsi} not found", request.Mmsi);
+                throw new KeyNotFoundException($"Buoy with MMSI {request.Mmsi} not found.");
             }
 
-            // Latest position from history, linked via Mmsi
             buoy.CurrentPosition = await context.BuoyPositionHistory
                 .AsNoTracking()
-                .Where(h => h.BuoyMmsi == buoy.Mmsi)
+                .Where(h => h.BuoyMmsi == request.Mmsi)
                 .OrderByDescending(h => h.ReceivedAt)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            logger.LogInformation("Successfully fetched position for buoy with ID {Id}", request.Id);
+            logger.LogInformation("Successfully fetched position for buoy MMSI {Mmsi}", request.Mmsi);
 
             return buoy;
         }
         catch (Exception ex) when (ex is not KeyNotFoundException)
         {
-            logger.LogError(ex, "Error fetching position for buoy with ID {Id}", request.Id);
+            logger.LogError(ex, "Error fetching position for buoy MMSI {Mmsi}", request.Mmsi);
             throw;
         }
     }
@@ -72,24 +71,24 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
     public async Task<PagedResponse<BuoyPositionHistory>> GetBuoyTrackByIdAsync(GetBuoyTrackByIdRequest request, CancellationToken cancellationToken = default)
     {
         logger.LogInformation(
-            "Fetching track for buoy with ID {Id} (From: {From}, To: {To}, Page: {Page})",
-            request.Id, request.From, request.To, request.Page);
+            "Fetching track for buoy MMSI {Mmsi} (From: {From}, To: {To}, Page: {Page})",
+            request.Mmsi, request.From, request.To, request.Page);
 
         try
         {
-            var buoy = await context.Buoys
+            var exists = await context.Buoys
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken);
+                .AnyAsync(b => b.Mmsi == request.Mmsi, cancellationToken);
 
-            if (buoy is null)
+            if (!exists)
             {
-                logger.LogWarning("Buoy with ID {Id} not found", request.Id);
-                throw new KeyNotFoundException($"Buoy with ID {request.Id} not found.");
+                logger.LogWarning("Buoy with MMSI {Mmsi} not found", request.Mmsi);
+                throw new KeyNotFoundException($"Buoy with MMSI {request.Mmsi} not found.");
             }
 
             var query = context.BuoyPositionHistory
                 .AsNoTracking()
-                .Where(h => h.BuoyMmsi == buoy.Mmsi)
+                .Where(h => h.BuoyMmsi == request.Mmsi)
                 .AsQueryable();
 
             if (request.From.HasValue)
@@ -103,14 +102,14 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
                 .ToPagedResponseAsync(request.Page, request.PageSize, cancellationToken);
 
             logger.LogInformation(
-                "Successfully fetched {Count} track points for buoy with ID {Id} (page {Page} of {TotalPages}, {TotalCount} total)",
-                result.Items.Count(), request.Id, result.Page, result.TotalPages, result.TotalCount);
+                "Successfully fetched {Count} track points for buoy MMSI {Mmsi} (page {Page} of {TotalPages}, {TotalCount} total)",
+                result.Items.Count(), request.Mmsi, result.Page, result.TotalPages, result.TotalCount);
 
             return result;
         }
         catch (Exception ex) when (ex is not KeyNotFoundException)
         {
-            logger.LogError(ex, "Error fetching track for buoy with ID {Id}", request.Id);
+            logger.LogError(ex, "Error fetching track for buoy MMSI {Mmsi}", request.Mmsi);
             throw;
         }
     }

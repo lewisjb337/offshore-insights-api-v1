@@ -29,12 +29,12 @@ public class BuoysController(ISender sender) : BaseController
         }
     }
 
-    [HttpGet("{id:guid}/position")]
-    public async Task<IActionResult> GetBuoyPositionByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    [HttpGet("{mmsi:long}/position")]
+    public async Task<IActionResult> GetBuoyPositionByIdAsync([FromRoute] long mmsi, CancellationToken cancellationToken)
     {
         try
         {
-            var response = await sender.Send(new GetBuoyPositionByIdQuery(new GetBuoyPositionByIdRequest(id)), cancellationToken);
+            var response = await sender.Send(new GetBuoyPositionByIdQuery(new GetBuoyPositionByIdRequest(mmsi)), cancellationToken);
             return Ok(ApiResponse<BuoyPositionResponse>.Ok(response));
         }
         catch (KeyNotFoundException ex)
@@ -47,8 +47,8 @@ public class BuoysController(ISender sender) : BaseController
         }
     }
 
-    [HttpGet("{id:guid}/track")]
-    public async Task<IActionResult> GetBuoyTrackByIdAsync([FromRoute] Guid id, [FromQuery] GetBuoyTrackByIdRequest request, CancellationToken cancellationToken)
+    [HttpGet("{mmsi:long}/track")]
+    public async Task<IActionResult> GetBuoyTrackByIdAsync([FromRoute] long mmsi, [FromQuery] GetBuoyTrackByIdRequest request, CancellationToken cancellationToken)
     {
         if (request.Period.HasValue && !request.From.HasValue)
             request = request with { From = TrackPeriodHelper.ToFromUtc(request.Period.Value) };
@@ -59,7 +59,7 @@ public class BuoysController(ISender sender) : BaseController
 
         try
         {
-            var response = await sender.Send(new GetBuoyTrackByIdQuery(request with { Id = id }), cancellationToken);
+            var response = await sender.Send(new GetBuoyTrackByIdQuery(request with { Mmsi = mmsi }), cancellationToken);
             return Ok(ApiResponse<PagedResponse<BuoyTelemetryResponse>>.Ok(response));
         }
         catch (KeyNotFoundException ex)

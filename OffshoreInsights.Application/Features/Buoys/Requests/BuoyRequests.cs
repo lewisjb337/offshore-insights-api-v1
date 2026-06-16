@@ -12,16 +12,16 @@ public record GetBuoysRequest
 }
 
 /// <summary>
-/// Retrieves the latest position for a single buoy by its UUID.
+/// Retrieves the latest position for a single buoy by its MMSI.
 /// </summary>
-public record GetBuoyPositionByIdRequest(Guid Id);
+public record GetBuoyPositionByIdRequest(long Mmsi);
 
 /// <summary>
 /// Retrieves a historic position track for a buoy over a requested time range.
 /// </summary>
 public record GetBuoyTrackByIdRequest
 {
-    public Guid Id { get; init; }
+    public long Mmsi { get; init; }
     public TrackPeriod? Period { get; init; }
     public DateTimeOffset? From { get; init; }
     public DateTimeOffset? To { get; init; }
