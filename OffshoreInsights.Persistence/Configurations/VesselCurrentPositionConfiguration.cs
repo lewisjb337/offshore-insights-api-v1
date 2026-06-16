@@ -12,11 +12,10 @@ public class VesselCurrentPositionConfiguration : ExternalEntityConfiguration<Ve
     {
         builder.ToTable("VesselCurrentPosition");
         builder.HasKey(x => x.Id);
-    
+
+        // NavStatus is stored as bigint; HasConversion<long> maps the enum via its numeric value.
         builder.Property(x => x.NavStatus)
-            .HasConversion(
-                v => v.HasValue ? (long)(int)v.Value : (long?)null,
-                v => v.HasValue ? (NavStatus)(int)v.Value : (NavStatus?)null)
+            .HasConversion<long>()
             .HasColumnType("bigint");
     }
 }

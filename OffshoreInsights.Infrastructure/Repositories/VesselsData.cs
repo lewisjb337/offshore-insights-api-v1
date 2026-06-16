@@ -129,7 +129,6 @@ public class VesselsData(ILogger<VesselsData> logger, ApplicationDbContext conte
         try
         {
             var vessel = await context.Vessels
-                .Include(v => v.CurrentPosition)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(v => v.Mmsi == request.Mmsi, cancellationToken);
 
@@ -138,6 +137,10 @@ public class VesselsData(ILogger<VesselsData> logger, ApplicationDbContext conte
                 logger.LogWarning("Vessel with MMSI {Mmsi} not found", request.Mmsi);
                 throw new KeyNotFoundException($"Vessel with MMSI {request.Mmsi} not found.");
             }
+
+            vessel.CurrentPosition = await context.VesselCurrentPositions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.VesselId == vessel.Id, cancellationToken);
 
             logger.LogInformation("Successfully fetched position for vessel with MMSI {Mmsi}", request.Mmsi);
 
