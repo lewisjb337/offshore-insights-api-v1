@@ -1,3 +1,4 @@
+using OffshoreInsights.Application.Features.Weather;
 using OffshoreInsights.Domain.Entities;
 
 namespace OffshoreInsights.Application.Features.Buoys.Responses;
@@ -6,14 +7,14 @@ public class BuoyPositionResponse : BuoyResponse
 {
     public BuoyPositionResponse() { }
 
-    private BuoyPositionResponse(Buoy buoy) : base(buoy)
+    public BuoyPositionResponse(Buoy buoy, WeatherConditions? weather = null) : base(buoy)
     {
         CurrentPosition = buoy.CurrentPosition is not null
             ? new BuoyTelemetryResponse(buoy.CurrentPosition)
             : null;
+        Weather = weather;
     }
 
     public BuoyTelemetryResponse? CurrentPosition { get; set; }
-
-    public static implicit operator BuoyPositionResponse(Buoy buoy) => new(buoy);
+    public WeatherConditions? Weather { get; set; }
 }
