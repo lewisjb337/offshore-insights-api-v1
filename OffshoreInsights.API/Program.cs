@@ -26,6 +26,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
+    options.AddDocumentTransformer<ApiKeySecurityTransformer>();
     options.AddSchemaTransformer<StringEnumSchemaTransformer>();
     options.AddOperationTransformer<PathParameterExamplesTransformer>();
     options.AddOperationTransformer<VesselPositionExamplesTransformer>();

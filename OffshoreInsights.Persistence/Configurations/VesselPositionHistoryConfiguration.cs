@@ -12,9 +12,6 @@ public class VesselPositionHistoryConfiguration : ExternalEntityConfiguration<Ve
         builder.ToTable("VesselPositionHistory");
         builder.HasKey(x => x.Id);
     
-        builder.Property(x => x.NavStatus)
-            .HasConversion<int>();
-    
         builder.HasIndex(x => new { x.VesselId, x.PositionTimestamp })
             .IsDescending(false, true)
             .HasDatabaseName("idx_vessel_position_history_vessel_timestamp");
