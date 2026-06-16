@@ -42,9 +42,8 @@ public class BuoysData(ILogger<BuoysData> logger, ApplicationDbContext context) 
         try
         {
             var buoy = await context.Buoys
-                .FromSqlRaw(@"SELECT * FROM ""Buoys"" WHERE ""Mmsi"" = {0}", request.Mmsi)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(b => b.Mmsi == request.Mmsi, cancellationToken);
 
             if (buoy is null)
             {
