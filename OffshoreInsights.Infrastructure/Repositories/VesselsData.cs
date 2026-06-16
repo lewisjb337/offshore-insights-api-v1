@@ -129,8 +129,9 @@ public class VesselsData(ILogger<VesselsData> logger, ApplicationDbContext conte
         try
         {
             var vessel = await context.Vessels
+                .FromSqlRaw(@"SELECT * FROM ""Vessels"" WHERE ""Mmsi"" = {0}", request.Mmsi)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(v => v.Mmsi == request.Mmsi, cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (vessel is null)
             {
@@ -139,8 +140,9 @@ public class VesselsData(ILogger<VesselsData> logger, ApplicationDbContext conte
             }
 
             vessel.CurrentPosition = await context.VesselCurrentPositions
+                .FromSqlRaw(@"SELECT * FROM ""VesselCurrentPosition"" WHERE ""VesselId"" = {0}", vessel.Id)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.VesselId == vessel.Id, cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
 
             logger.LogInformation("Successfully fetched position for vessel with MMSI {Mmsi}", request.Mmsi);
 
