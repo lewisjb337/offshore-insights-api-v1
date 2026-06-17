@@ -12,7 +12,7 @@ namespace OffshoreInsights.API.Controllers;
 [ApiController]
 [RequireApiKey]
 [RequireMinPlan(AccountPlan.Professional)]
-public class GeofenceController(ISender sender) : BaseController
+public class GeofencesController(ISender sender) : BaseController
 {
     /// <summary>
     /// Retrieves a paginated list of all geofences for the account.
